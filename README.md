@@ -21,6 +21,7 @@ By the end of 2025, version 1.0 will release with following features:
 - Able to generate a daily / weekly / monthly savings report in a simple .txt file.
 
 # PROJECT STRUCTURE
+```txt
 ~ 
 |- main.py 
 |- data 
@@ -43,7 +44,7 @@ By the end of 2025, version 1.0 will release with following features:
    cd basic-savings-app
 
 # DISCLAIMER
-This repository might not be maintained regularly as I have a other commitments and this is only a personal project in my free time, hope you understand!
+This repository might not be maintained regularly as I have a other commitments and this is only a personal project in my free time, hope you understand :D
 
 Thank you and good luck coding!
 
