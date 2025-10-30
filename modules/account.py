@@ -7,7 +7,7 @@ from modules.data_handler import DataHandler
 class Account():
 
     # Account Variables
-    _accounts : list[Account] = []
+    accounts : list[Account] = []
     _account_id_counter : int = 1
 
     # Path Variables
@@ -22,6 +22,8 @@ class Account():
         self.folder_path = folder_path
         self.profile_path = profile_path
         self.transaction_folder_path = transactions_folder_path
+
+        Account.accounts.append(self)
 
     @classmethod # Alternative Constructor
     def create_account(cls, name: Optional[str], balance: Optional[float]) -> Account:
@@ -40,6 +42,19 @@ class Account():
 
         return cls(id, name, balance, folder_path, profile_path, transactions_folder_path)
     
+    # Balance Handling
+    def deposit(self, amount: float) -> None:
+        self.balance += amount
+        print(f"Deposited {amount} to {self.name}, now {self.balance}.")
+
+    def withdraw(self, amount: float) -> bool:
+        if self.balance >= amount:
+            self.balance -= amount
+            print(f"Withdrew {amount} from {self.name}, now {self.balance}.")
+            return True
+        else:
+            print(f"{self.name} has insufficient funds. ({self.balance})") 
+            return False
 
     def __str__(self) -> str:
         return f"{self.name} has balance of {self.balance}."
