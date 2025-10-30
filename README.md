@@ -34,6 +34,7 @@ By the end of 2025, version 1.0 will release with following features:
 |  |- data_handler.py 
 |- .gitignore 
 |- README.md
+```
 
 # SETUP
 
