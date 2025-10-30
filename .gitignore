@@ -1,0 +1,3 @@
+.vscode/
+/dependencies/__pycache__
+data/*
