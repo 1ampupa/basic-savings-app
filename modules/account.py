@@ -67,7 +67,8 @@ class Account():
         cls.accounts.clear()
         accounts: dict = DataHandler.get_accounts_list()
 
-        if not accounts.get("accounts"): return None
+        if not accounts.get("accounts"): 
+            return None
 
         for _, profile_path in accounts["accounts"].items():
             account_data = DataHandler.read_json(profile_path)
