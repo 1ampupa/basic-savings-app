@@ -2,28 +2,70 @@ from pathlib import Path
 import json
 
 class DataHandler:
-    folder_path: Path = Path("data")
+    data_folder_path: Path = Path("data")
+    accounts_json_file: Path = data_folder_path / "accounts.json"
 
+    # Helper function for writing JSON file
+    @staticmethod
+    def write_json(path: Path, data: dict|list) -> None:
+        with open(path, "w") as file:
+            json.dump(data, file, indent=4)
+
+    # Helper function for reading JSON file
+    @staticmethod
+    def read_json(path):
+        with open(path, "r") as file:
+            data = json.load(file)
+            return data
+
+    # Create Data Folder
     @classmethod
     def ensure_data_folder(cls) -> Path:
-        cls.folder_path.mkdir(exist_ok=True)
-        return cls.folder_path
+        cls.data_folder_path.mkdir(exist_ok=True)
+        return cls.data_folder_path
+
+    # Create Accounts list file
+    @classmethod
+    def ensure_accounts_list(cls) -> Path:
+        if not cls.accounts_json_file.exists():
+            cls.write_json(cls.accounts_json_file, {
+                "accounts": {},
+                "account-id_counter": 1
+            })
+        return cls.accounts_json_file
+
+    # Update Accounts list file
+    @classmethod
+    def update_accounts_list(cls, data: dict) -> None:
+        path: Path = cls.accounts_json_file
+        cls.write_json(path, data)
+
+    # Get Accounts list from file
+    @classmethod
+    def get_accounts_list(cls):
+        path: Path = cls.accounts_json_file
+        data = cls.read_json(path)
+        return data
 
     @classmethod
     def create_account_folder(cls, account_id: str) -> Path:
-        folder = cls.folder_path / account_id
+        folder = cls.data_folder_path / account_id
         folder.mkdir(exist_ok=True)
         return folder
 
-    @staticmethod
-    def write_json(path: Path, data: dict) -> None:
-        with open(path, "w") as f:
-            json.dump(data, f, indent=4)
-
     @classmethod
-    def create_account_profile(cls, account_folder: Path, account_id: str, name: str, balance: float) -> Path:
+    def create_account_profile(cls, account_folder: Path, account_id: str, 
+                               name: str, balance: float, folder_path: Path,
+                               transaction_folder_path: Path) -> Path:
         path = account_folder / "profile.json"
-        cls.write_json(path, {"id": account_id, "name": name, "balance": balance})
+        cls.write_json(path, {
+            "id": account_id, 
+            "name": name, 
+            "balance": balance,
+            "folder-path": str(folder_path),
+            "profile-path": str(path),
+            "transactions-folder-path": str(transaction_folder_path)
+            })
         return path
 
     @staticmethod

@@ -1,3 +1,6 @@
 from modules.account import Account
 
-account1 : Account = Account.create_account("Test User 1", 100)
+Account.load_accounts()
+
+for account in Account.accounts:
+    print(account.name)
