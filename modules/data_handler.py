@@ -1,39 +1,52 @@
 from pathlib import Path
 import json
 
-#TODO Create a data folder
+class DataHandler:
+    folder_path: Path = Path("data")
 
-class DataHandler():
+    @classmethod
+    def ensure_data_folder(cls) -> Path:
+        cls.folder_path.mkdir(exist_ok=True)
+        return cls.folder_path
 
-    folder_path : Path
-
-    @staticmethod
-    def create_data_folder() -> Path:
-        DataHandler.folder_path = Path("data")
-        DataHandler.folder_path.mkdir(exist_ok=True)
-        return DataHandler.folder_path
-    
-    @staticmethod
-    def create_account_folder(account_id: str) -> Path:
-        account_folder : Path = Path(f"{DataHandler.folder_path}/{account_id}")
-        account_folder.mkdir(exist_ok=True)
-        return account_folder
+    @classmethod
+    def create_account_folder(cls, account_id: str) -> Path:
+        folder = cls.folder_path / account_id
+        folder.mkdir(exist_ok=True)
+        return folder
 
     @staticmethod
-    def create_account_profile_JSON(account_folder: Path, account_id: str, 
-                                    account_name: str, account_balance: float) -> Path:
-        account_path: Path = account_folder / "profile.json"
-        account_data: dict = {
-            "id": account_id,
-            "name": account_name,
-            "balance": account_balance
+    def write_json(path: Path, data: dict) -> None:
+        with open(path, "w") as f:
+            json.dump(data, f, indent=4)
+
+    @classmethod
+    def create_account_profile(cls, account_folder: Path, account_id: str, name: str, balance: float) -> Path:
+        path = account_folder / "profile.json"
+        cls.write_json(path, {"id": account_id, "name": name, "balance": balance})
+        return path
+
+    @staticmethod
+    def update_account_profile(account) -> None:
+        path = account.profile_path
+        data = {"id": account.id, "name": account.name, "balance": account.balance}
+        DataHandler.write_json(path, data)
+
+    @staticmethod
+    def create_transactions_folder(account_folder: Path) -> Path:
+        folder = account_folder / "transactions"
+        folder.mkdir(exist_ok=True)
+        return folder
+
+    @staticmethod
+    def write_transaction(account, transaction) -> None:
+        path = account.transaction_folder_path / f"{transaction.id}.json"
+        data = {
+            "id": transaction.id,
+            "account": account.name,
+            "account-id": account.id,
+            "type": str(transaction.transaction_type),
+            "amount": transaction.amount,
+            "new-balance": account.balance
         }
-        with open(account_path, "w") as file:
-            json.dump(account_data.copy(), file,indent=4)
-        return account_path
-    
-    @staticmethod
-    def create_account_transactions_folder(account_folder: Path) -> Path:
-        account_transactions_folder: Path = Path(f"{account_folder}/transactions")
-        account_transactions_folder.mkdir(exist_ok=True)
-        return account_transactions_folder
+        DataHandler.write_json(path, data)
