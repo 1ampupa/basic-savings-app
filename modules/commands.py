@@ -12,7 +12,7 @@ class Commands(Enum):
     # Accounts Sub command
     ACC_LOGIN = auto()
     ACC_CREATE = auto()
-    ACC_GET = auto()
+    ACC_BALANCE = auto()
     ACC_EDIT = auto()
     ACC_DELETE = auto()
 

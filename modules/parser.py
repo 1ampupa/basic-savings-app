@@ -15,16 +15,16 @@ class Parser:
 
     sub_command_aliases = {
         # ACCOUNT
-        Commands.ACC_LOGIN: [],
-        Commands.ACC_CREATE: [],
-        Commands.ACC_GET: [],
-        Commands.ACC_EDIT: [],
-        Commands.ACC_DELETE: [],
+        Commands.ACC_LOGIN: ["login", "session", "use"],
+        Commands.ACC_CREATE: ["create", "new", "add", "open"],
+        Commands.ACC_BALANCE: ["balance", "b", "money", "get"],
+        Commands.ACC_EDIT: ["edit", "modify"],
+        Commands.ACC_DELETE: ["delete", "del", "remove", "close"],
 
         # TRANSACTION
-        Commands.T_DEPOSIT: [],
-        Commands.T_WITHDRAW: [],
-        Commands.T_TRANSFER: []
+        Commands.T_DEPOSIT: ["deposit", "add", "+"],
+        Commands.T_WITHDRAW: ["withdraw", "remove", "-"],
+        Commands.T_TRANSFER: ["transfer", "move", ">"]
     }
 
     @classmethod
@@ -45,6 +45,32 @@ class Parser:
         return True, arguments[1], arguments[2:]
 
     @classmethod
+    def check_prefix(cls, command, checked_prefix, arguments) -> tuple:
+        match (checked_prefix):
+            case Commands.EXIT:
+                return True, "EXITING..."
+            case Commands.HELP:
+                cls.command_help()
+                return True, ""
+            case Commands.CLEAR:
+                if platform.system() == "Windows":
+                    os.system("cls")
+                else:
+                    os.system("clear")
+                return True, "Cleared Terminal."
+            case Commands.ACCOUNT:
+                # Check sub command arguments
+                parsable, sub_command, sub_command_arguments = cls.check_sub_command(arguments)
+                if not parsable: return False, "Missing or empty subcommand for ACCOUNT command. Try using 'HELP' command"
+                return True, "Account related commands"
+            case Commands.TRANSACTION:
+                parsable, sub_command, sub_command_arguments = cls.check_sub_command(arguments)
+                if not parsable: return False, "Missing or empty subcommand for TRANSACTION command. Try using 'HELP' command"
+                return True, "Transaction related commands"
+        
+        return False, f"Unknown command given: {command}. Try using 'HELP' command"
+
+    @classmethod
     def parse(cls, command: str) -> tuple:
         # Check Empty
         if command.strip() == "": 
@@ -55,40 +81,18 @@ class Parser:
             prefix: str = arguments[0]
 
             checked_prefix: Commands = cls.check_prefix_alias(prefix)
-
-            match (checked_prefix):
-                case Commands.EXIT:
-                    return True, "EXITING..."
-                case Commands.HELP:
-                    cls.command_help()
-                    return True, ""
-                case Commands.CLEAR:
-                    if platform.system() == "Windows":
-                        os.system("cls")
-                    else:
-                        os.system("clear")
-                    return True, "Cleared Terminal."
-                case Commands.ACCOUNT:
-                    # Check sub command arguments
-                    parsable, sub_command, sub_command_arguments = cls.check_sub_command(arguments)
-                    if not parsable: return False, "Missing or empty subcommand for ACCOUNT command. Try using 'HELP' command"
-                    print(sub_command, sub_command_arguments)
-                    return True, "Account related commands"
-                case Commands.TRANSACTION:
-                    parsable, sub_command, sub_command_arguments = cls.check_sub_command(arguments)
-                    if not parsable: return False, "Missing or empty subcommand for TRANSACTION command. Try using 'HELP' command"
-                    print(sub_command, sub_command_arguments)
-                    return True, "Transaction related commands"
+            success, log = cls.check_prefix(command, checked_prefix, arguments)
+            return success, log
         except ValueError as e:
             if str(e) == "No closing quotation":
                 return False, f"Incomplete quotation mark. (Missing a closing mark.)"
+            if str(e) == "No escaped character":
+                return False, f"Invalid Escape sequence parsed."
             return False, f"A ValueError occurred while parsing: >_ {command}.\n{e}"
         except TypeError as e:
             return False, f"A TypeError occurred while parsing: >_ {command}.\n{e}"
         except Exception as e:
             return False, f"An unexpected error occurred while parsing: >_ {command}\n{e}"
-        
-        return False, f"Unknown command given: {command}. Try using 'HELP' command"
 
     @staticmethod
     def command_help():
