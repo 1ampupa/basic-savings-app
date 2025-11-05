@@ -9,14 +9,15 @@ from modules.transaction_types import TransactionTypes
 
 class Account():
 
-    # Account Variables
-    accounts : list = []
-    _accounts_path : dict = {}
-    _account_id_counter : int = 1
-
     # Path Variables
     _data_folder_path: Path = DataHandler.ensure_data_folder()
     _accounts_file_path: Path = DataHandler.ensure_accounts_list()
+
+    # Account Variables
+    accounts : list[Account] = []
+    current_account: Account | None = None
+    _accounts_path : dict = {}
+    _account_id_counter : int = 1
 
     # Initialise an account.
     def __init__(self, id : str, name: str, balance: float, folder_path: Path, profile_path: Path, transactions_folder_path: Path) -> None:
@@ -39,7 +40,7 @@ class Account():
         # Update the accounts.json
         accounts_json_data = {
             "accounts": {k: str(v) for k, v in Account._accounts_path.items()},
-            "account-id_counter": Account._account_id_counter
+            "account_id_counter": Account._account_id_counter
         }
         DataHandler.update_accounts_list(accounts_json_data)
 

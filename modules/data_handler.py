@@ -30,7 +30,7 @@ class DataHandler:
         if not cls.accounts_json_file.exists():
             cls.write_json(cls.accounts_json_file, {
                 "accounts": {},
-                "account-id_counter": 1
+                "account_id_counter": 1
             })
         return cls.accounts_json_file
 

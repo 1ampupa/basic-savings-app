@@ -6,7 +6,7 @@ from modules.commands import Commands
 class Parser:
     
     prefix_aliases = {
-        Commands.EXIT: ["EXIT", "QUIT", "END", "Q"],
+        Commands.EXIT: ["EXIT", "QUIT", "STOP", "END", "Q"],
         Commands.HELP: ["HELP", "?"],
         Commands.CLEAR: ["CLS", "CLEAR"],
         Commands.ACCOUNT: ["ACCOUNT", "ACC", "A"],
@@ -27,72 +27,173 @@ class Parser:
         Commands.T_TRANSFER: ["transfer", "move", ">"]
     }
 
+    command: str = ""
+    prefix: str | Commands = Commands.NONE
+    sub_command: str = ""
+    arguments : list[str] = []
+
+    # Aliases checker
+
     @classmethod
-    def check_prefix_alias(cls, prefix: str) -> Commands:
+    def check_prefix_aliases(cls, prefix: str) -> Commands:
         prefix = prefix.upper()
         for key, alias in cls.prefix_aliases.items():
             if prefix in alias:
                 return key
         return Commands.NONE
 
-    @staticmethod
-    def check_sub_command(arguments: list[str]):
-        if len(arguments) < 2: 
-            return False, None, []
-        sub_command = arguments[1].strip()
-        if sub_command == "": 
-            return False, None, []
-        return True, arguments[1], arguments[2:]
+    @classmethod
+    def check_sub_command_aliases(cls, sub_command: str) -> Commands:
+        sub_command = sub_command.lower()
+        for key, alias in cls.sub_command_aliases.items():
+            if sub_command in alias:
+                return key
+        return Commands.NONE
+
+    # Check Prefix
 
     @classmethod
-    def check_prefix(cls, command, checked_prefix, arguments) -> tuple:
-        match (checked_prefix):
+    def parse_prefix(cls):
+        match (cls.prefix):
             case Commands.EXIT:
-                return True, "EXITING..."
+                return False, "Stopping..."
             case Commands.HELP:
                 cls.command_help()
-                return True, ""
+                return False, "Displayed available commands."
             case Commands.CLEAR:
                 if platform.system() == "Windows":
                     os.system("cls")
                 else:
                     os.system("clear")
-                return True, "Cleared Terminal."
+                return False, "Cleared Terminal."
             case Commands.ACCOUNT:
-                # Check sub command arguments
-                parsable, sub_command, sub_command_arguments = cls.check_sub_command(arguments)
-                if not parsable: return False, "Missing or empty subcommand for ACCOUNT command. Try using 'HELP' command"
-                return True, "Account related commands"
+                return True, "Parsing Account-related command."    
             case Commands.TRANSACTION:
-                parsable, sub_command, sub_command_arguments = cls.check_sub_command(arguments)
-                if not parsable: return False, "Missing or empty subcommand for TRANSACTION command. Try using 'HELP' command"
-                return True, "Transaction related commands"
+                return True, "Parsing Transaction-related command."    
+
+        return False, f"Unknown command given: {cls.command}. Try using 'HELP' command"
+
+    # Check sub command
+
+    @classmethod
+    def parse_sub_command(cls):
+        # Check command arguments length
+        if len(cls.arguments) < 3:
+            return False, f"This command prefix required a subcommand and at least an argument. Try using 'HELP' command"
         
-        return False, f"Unknown command given: {command}. Try using 'HELP' command"
+        # Check empty subcommand
+        sub_command = cls.arguments[1].strip()
+        if sub_command == "": 
+            return False, f"Missing or empty subcommand. Try using 'HELP' command"
+        
+        # Get aliases
+        sub_command = cls.check_sub_command_aliases(cls.sub_command)
+
+        return sub_command
+    
+    # Executor
+
+    @classmethod
+    def execute(cls, sub_command):
+        match (sub_command):
+            # Account
+            case Commands.ACC_LOGIN:
+                success, log = cls.execute_account_login()
+                return success, log
+            case Commands.ACC_CREATE:
+                success, log = cls.execute_account_login()
+                return success, log
+            case Commands.ACC_BALANCE:
+                success, log = cls.execute_account_login()
+                return success, log
+            case Commands.ACC_EDIT:
+                success, log = cls.execute_account_login()
+                return success, log
+            case Commands.ACC_DELETE:
+                success, log = cls.execute_account_login()
+                return success, log
+                
+            # Transaction
+            case Commands.T_DEPOSIT:
+                success, log = cls.execute_account_login()
+                return success, log
+            case Commands.T_WITHDRAW:
+                success, log = cls.execute_account_login()
+                return success, log
+            case Commands.T_TRANSFER:
+                success, log = cls.execute_account_login()
+                return success, log
+
+        return False, f"Unknown command given: {cls.command}. Try using 'HELP' command"
+
+    # ACC_LOGIN
+    @staticmethod
+    def execute_account_login() -> tuple: return ()
+
+    # ACC_CREATE
+    @staticmethod
+    def execute_account_create() -> tuple: return ()
+
+    # ACC_BALANCE
+    @staticmethod
+    def execute_account_balance() -> tuple: return ()
+
+    # ACC_EDIT
+    @staticmethod
+    def execute_account_edit() -> tuple: return ()
+
+    # ACC_DELETE
+    @staticmethod
+    def execute_account_delete() -> tuple: return ()
+
+    # T_DEPOSIT
+    @staticmethod
+    def execute_transaction_deposit() -> tuple: return ()
+
+    # T_WITHDRAW
+    @staticmethod
+    def execute_transaction_withdraw() -> tuple: return ()
+
+    # T_TRANSFER
+    @staticmethod
+    def execute_transaction_transfer() -> tuple: return ()
+
+    # Parser
 
     @classmethod
     def parse(cls, command: str) -> tuple:
+        cls.command = command
         # Check Empty
         if command.strip() == "": 
             return False, "Please enter a command, or typing help for list of commands."
 
         try:
-            arguments: list[str] = shlex.split(command)
-            prefix: str = arguments[0]
+            # Get Arguments list
+            cls.arguments = shlex.split(command)
 
-            checked_prefix: Commands = cls.check_prefix_alias(prefix)
-            success, log = cls.check_prefix(command, checked_prefix, arguments)
+            # Get Prefix
+            cls.prefix = cls.arguments[0]
+
+            # Check Prefix
+            cls.prefix = cls.check_prefix_aliases(cls.prefix)
+            single_command, log = cls.parse_prefix()
+            
+            # Check Sub command
+            if single_command:
+                sub_command = cls.parse_sub_command()
+                success, log = cls.execute(sub_command)
+            else:
+                success = True
+
             return success, log
         except ValueError as e:
-            if str(e) == "No closing quotation":
-                return False, f"Incomplete quotation mark. (Missing a closing mark.)"
-            if str(e) == "No escaped character":
-                return False, f"Invalid Escape sequence parsed."
             return False, f"A ValueError occurred while parsing: >_ {command}.\n{e}"
         except TypeError as e:
             return False, f"A TypeError occurred while parsing: >_ {command}.\n{e}"
         except Exception as e:
             return False, f"An unexpected error occurred while parsing: >_ {command}\n{e}"
+
+    # Help command
 
     @staticmethod
     def command_help():
