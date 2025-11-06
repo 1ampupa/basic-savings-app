@@ -2,7 +2,8 @@ from enum import Enum, auto
 
 class Commands(Enum):
     # Command prefixes
-    NONE = 0
+    NONE = auto()
+    DEBUG = auto()
     EXIT = auto()
     HELP = auto()
     CLEAR = auto()
