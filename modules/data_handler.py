@@ -4,6 +4,11 @@ import json
 class DataHandler:
     data_folder_path: Path = Path("data")
     accounts_json_file: Path = data_folder_path / "accounts.json"
+    
+    # Helper function to check index exist in list
+    @staticmethod
+    def exists_in_list(target_list: list, index: int) -> bool:
+        return index < len(target_list)
 
     # Helper function for writing JSON file
     @staticmethod
@@ -47,12 +52,14 @@ class DataHandler:
         data = cls.read_json(path)
         return data
 
+    # Create an account folder
     @classmethod
     def create_account_folder(cls, account_id: str) -> Path:
         folder = cls.data_folder_path / account_id
         folder.mkdir(exist_ok=True)
         return folder
 
+    # Create an account profile JSON file
     @classmethod
     def create_account_profile(cls, account_folder: Path, account_id: str, 
                                name: str, balance: float, folder_path: Path,
@@ -68,18 +75,21 @@ class DataHandler:
             })
         return path
 
+    # Update an account profile JSON file
     @staticmethod
     def update_account_profile(account) -> None:
         path = account.profile_path
         data = {"id": account.id, "name": account.name, "balance": account.balance}
         DataHandler.write_json(path, data)
 
+    # Create a transaction folder inside an account folder
     @staticmethod
     def create_transactions_folder(account_folder: Path) -> Path:
         folder = account_folder / "transactions"
         folder.mkdir(exist_ok=True)
         return folder
 
+    # Write transaction log into the transaction folder inside the account folder.
     @staticmethod
     def write_transaction(account, transaction) -> None:
         path = account.transaction_folder_path / f"{transaction.id}.json"

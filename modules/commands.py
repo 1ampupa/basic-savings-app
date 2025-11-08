@@ -4,9 +4,11 @@ class Commands(Enum):
     # Command prefixes
     NONE = auto()
     DEBUG = auto()
-    EXIT = auto()
     HELP = auto()
     CLEAR = auto()
+    VERSION = auto()
+    EXIT = auto()
+
     ACCOUNT = auto()
     TRANSACTION = auto()
 
@@ -14,7 +16,7 @@ class Commands(Enum):
     ACC_LOGIN = auto()
     ACC_CREATE = auto()
     ACC_BALANCE = auto()
-    ACC_EDIT = auto()
+    ACC_MODIFY = auto()
     ACC_DELETE = auto()
 
     # Transaction Sub command
@@ -22,3 +24,4 @@ class Commands(Enum):
     T_WITHDRAW = auto()
     T_TRANSFER = auto()
 
+    SOB = auto()
