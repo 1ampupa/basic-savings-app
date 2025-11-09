@@ -5,7 +5,7 @@ from modules.ascii_decorator import AsciiDecorator as Text
 
 class Parser:
     
-    program_version = "Test Version 1"
+    program_version = "Release Version 1"
 
     prefix_aliases = {
         Commands.DEBUG: ["DEBUG", "DEV", "TEST"],
@@ -15,12 +15,13 @@ class Parser:
         Commands.EXIT: ["EXIT", "QUIT", "STOP", "END", "Q"],
         
         Commands.ACCOUNT: ["ACCOUNT", "ACC", "A"],
-        Commands.TRANSACTION: ["TRANSACTION", "TRANS", "T"],
+        Commands.TRANSACTION: ["TRANSACTION", "TRAN", "T"],
 
         Commands.SOB: ["SOB", ":(", "D:", "cry"]
     }
 
     account_sub_command_aliases = {
+        Commands.ACC_LIST: ["list", "query", "all", "*"],
         Commands.ACC_LOGIN: ["login", "log", "session", "use", "in"],
         Commands.ACC_CREATE: ["create", "new", "add", "open"],
         Commands.ACC_BALANCE: ["balance", "b", "money", "get"],
@@ -36,6 +37,7 @@ class Parser:
 
     executor_map = {
         # ACCOUNT
+        Commands.ACC_LIST: Executor.execute_account_list,
         Commands.ACC_LOGIN: Executor.execute_account_login,
         Commands.ACC_CREATE: Executor.execute_account_create,
         Commands.ACC_BALANCE: Executor.execute_account_balance,
@@ -144,18 +146,18 @@ class Parser:
 
     @classmethod
     def execute(cls, sub_command: Commands) -> tuple:
-        execute_function = cls.executor_map.get(sub_command)
-        if execute_function:
-            arguments = cls.arguments[2:] if sub_command in cls.executor_function_required_arguments else []
-            try:
+        try:
+            execute_function = cls.executor_map.get(sub_command)
+            if execute_function:   
+                arguments = cls.arguments[2:] if sub_command in cls.executor_function_required_arguments else []
                 success, log = execute_function(arguments) if arguments else execute_function()
                 return success, log
-            except Exception as e:
-                if cls.debug_mode:
-                    return False, cls.traceback_exception(e)
-        
-        return False, f"{Text.RED}Something went wrong, please try again later.{Text.RESET}"
-        
+        except Exception as e:
+            if cls.debug_mode:
+                return False, cls.traceback_exception(e)
+            
+        return False, f"{Text.BG_RED}{Text.WHITE}Something went wrong, please try again later.{Text.RESET}"
+                
 
     # Traceback
     @staticmethod
@@ -207,6 +209,5 @@ class Parser:
 
     # Help command
 
-    @staticmethod
-    def command_help():
-        Executor.command_help()
+    @staticmethod 
+    def command_help(): Executor.command_help()

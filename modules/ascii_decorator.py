@@ -14,7 +14,8 @@ class AsciiDecorator(Enum):
     WHITE   = "\033[97m"
 
     # Styling
-    BOLD    = "\033[1m"
+    BOLD      = "\033[1m"
+    ITALIC    = "\033[3m"
     UNDERLINE = "\033[4m"
 
     # Background Colours

@@ -4,4 +4,5 @@ class TransactionTypes(Enum):
     DEPOSIT = auto()
     WITHDRAW = auto()
     TRANSFER = auto()
+    RECEIVE = auto()
     

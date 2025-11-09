@@ -69,9 +69,9 @@ class DataHandler:
             "id": account_id, 
             "name": name, 
             "balance": balance,
-            "folder-path": str(folder_path),
-            "profile-path": str(path),
-            "transactions-folder-path": str(transaction_folder_path)
+            "folder_path": str(folder_path),
+            "profile_path": str(path),
+            "transactions_folder_path": str(transaction_folder_path)
             })
         return path
 
@@ -79,8 +79,14 @@ class DataHandler:
     @staticmethod
     def update_account_profile(account) -> None:
         path = account.profile_path
-        data = {"id": account.id, "name": account.name, "balance": account.balance}
-        DataHandler.write_json(path, data)
+        DataHandler.write_json(path, {
+            "id": account.id,
+            "name": account.name,
+            "balance": account.balance,
+            "folder_path": str(account.folder_path),
+            "profile_path": str(account.profile_path),
+            "transactions_folder_path": str(account.transactions_folder_path)
+        })
 
     # Create a transaction folder inside an account folder
     @staticmethod
@@ -92,13 +98,15 @@ class DataHandler:
     # Write transaction log into the transaction folder inside the account folder.
     @staticmethod
     def write_transaction(account, transaction) -> None:
-        path = account.transaction_folder_path / f"{transaction.id}.json"
+        path = Path(account.transactions_folder_path) / f"{transaction.id}.json"
         data = {
             "id": transaction.id,
             "account": account.name,
-            "account-id": account.id,
+            "account_id": account.id,
             "type": str(transaction.transaction_type),
             "amount": transaction.amount,
-            "new-balance": account.balance
+            "new_balance": account.balance,
+            "transferer": transaction.transferer.name,
+            "receiver": transaction.receiver.name
         }
         DataHandler.write_json(path, data)

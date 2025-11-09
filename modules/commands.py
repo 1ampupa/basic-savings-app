@@ -13,6 +13,7 @@ class Commands(Enum):
     TRANSACTION = auto()
 
     # Accounts Sub command
+    ACC_LIST = auto()
     ACC_LOGIN = auto()
     ACC_CREATE = auto()
     ACC_BALANCE = auto()
