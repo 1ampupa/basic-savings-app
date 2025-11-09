@@ -107,7 +107,7 @@ class Executor():
         # Deposit
         try:
             amount = float(arguments[0])
-            _, log = Account.current_account.deposit(amount)
+            _, log = Account.current_account.deposit(amount, True)
             return True, log
         except Exception as e:
             from modules.parser import Parser
@@ -128,7 +128,7 @@ class Executor():
         # Withdraw
         try:
             amount = float(arguments[0])
-            _, log = Account.current_account.withdraw(amount)
+            _, log = Account.current_account.withdraw(amount, True)
             return True, log
         except Exception as e:
             from modules.parser import Parser
