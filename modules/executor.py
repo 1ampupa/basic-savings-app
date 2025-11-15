@@ -17,9 +17,9 @@ class Executor():
             for account in Account.accounts:
                 if account == Account.current_account:
                     # Current Account
-                    print(f"{Text.BLACK}{Text.BG_WHITE}{account.name:<25} {account.id:<15} {float(account.balance):<10}{Text.RESET}")
+                    print(f"{Text.BLACK}{Text.BG_WHITE}{account.name:<25} {account.id:<15} {float(account.balance):<10.2f}{Text.RESET}")
                 else:
-                    print(f"{account.name:<25} {account.id:<15} {float(account.balance):<10}")
+                    print(f"{account.name:<25} {account.id:<15} {float(account.balance):<10.2f}")
             return True, f"{Text.GREEN}Now using: {Account.current_account}{Text.RESET}"
 
     @staticmethod
@@ -58,13 +58,13 @@ class Executor():
         except:
             account.balance = 0
         Account.current_account = account
-        return True, f"{Text.GREEN}Successfully created and logged into account named {account.name} with the balance of {account.balance}.{Text.RESET}"
+        return True, f"{Text.GREEN}Successfully created and logged into account named {account.name} with the balance of {account.balance:.2f}.{Text.RESET}"
     
     @staticmethod
     def execute_account_balance() -> tuple:
         if Account.current_account == None:
             return False, "You're not using any account."
-        return True, f"{Text.GREEN}{Account.current_account.name} has the balance of {Account.current_account.balance}{Text.RESET}"
+        return True, f"{Text.GREEN}{Account.current_account.name} has the balance of {Account.current_account.balance:.2f}{Text.RESET}"
     
     @staticmethod
     def execute_account_modify(arguments=[]) -> tuple:
