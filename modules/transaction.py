@@ -1,6 +1,7 @@
 import uuid
 from modules.data_handler import DataHandler
 from modules.transaction_types import TransactionTypes
+from modules.ascii_decorator import AsciiDecorator as Text
 
 class Transaction():
     
@@ -20,14 +21,15 @@ class Transaction():
         DataHandler.write_transaction(self.account, self)
 
     def __str__(self) -> str:
-        if self.transaction_type == TransactionTypes.DEPOSIT:
-            return f"Transaction: DEPOSITED {self.amount} to {self.account.name}, now {self.account.balance}."
-        elif self.transaction_type == TransactionTypes.WITHDRAW:
-            return f"Transaction: WITHDREW {self.amount} from {self.account.name}, now {self.account.balance}."
-        elif self.transaction_type == TransactionTypes.TRANSFER:
-            return f"Transaction: TRANSFER {self.amount} from {self.transferer.name} to {self.receiver.name}, now {self.account.balance}."
-        elif self.transaction_type == TransactionTypes.RECEIVE:
-            return f"Transaction: RECEIVE {self.amount} from {self.transferer.name}, now {self.account.balance}."
-        else:
-            return f"Transaction: {self.transaction_type} {self.amount} -> {self.account.name}"
-    
+        match self.transaction_type:
+            case TransactionTypes.DEPOSIT:
+                return f"{Text.GREEN}DEPOSITED {self.amount} to {self.account.name}, now {self.account.balance}.{Text.RESET}"
+            case TransactionTypes.WITHDRAW:
+                return f"{Text.GREEN}WITHDREW {self.amount} from {self.account.name}, now {self.account.balance}.{Text.RESET}"
+            case TransactionTypes.TRANSFER:
+                return f"{Text.GREEN}TRANSFERRED {self.amount} from {self.transferer.name} to {self.receiver.name}, now {self.account.balance}.{Text.RESET}"
+            case TransactionTypes.RECEIVE:
+                return f"{Text.GREEN}RECEIVED {self.amount} from {self.transferer.name}, now {self.account.balance}.{Text.RESET}"
+            case _:
+                return f"{Text.GREEN}A transaction log has created for {self.account.name}.{Text.RESET}"
+            

@@ -19,7 +19,7 @@ class Account():
     _account_id_counter : int = 1
 
     # Initialise an account.
-    def __init__(self, id : str, name: str, balance: float, folder_path: Path, profile_path: Path, transactions_folder_path: Path) -> None:
+    def __init__(self, id : str, name: str, balance: float, folder_path: Path, profile_path: Path, transaction_history_file: Path) -> None:
         
         # Assign values
         self.id: str = id
@@ -27,7 +27,7 @@ class Account():
         self.balance: float = balance
         self.folder_path: Path = folder_path
         self.profile_path: Path = profile_path
-        self.transactions_folder_path: Path = transactions_folder_path
+        self.transaction_history_file: Path = transaction_history_file
 
         # Increase the counter
         Account._account_id_counter += 1
@@ -54,13 +54,13 @@ class Account():
         # Create an account folder
         folder_path = DataHandler.create_account_folder(id)
         
-        # Create a transactions folder
-        transactions_folder_path = DataHandler.create_transactions_folder(folder_path)
+        # Create a transaction history file
+        transaction_history_file = DataHandler.create_transaction_history_file(folder_path)
         
         # Create a profile.json file
-        profile_path = DataHandler.create_account_profile(folder_path, id, name, balance, folder_path, transactions_folder_path)
+        profile_path = DataHandler.create_account_profile(folder_path, id, name, balance, folder_path, transaction_history_file)
 
-        return cls(id, name, balance, folder_path, profile_path, transactions_folder_path)
+        return cls(id, name, balance, folder_path, profile_path, transaction_history_file)
     
     @classmethod
     def load_accounts(cls) -> Account | None:
@@ -72,14 +72,24 @@ class Account():
 
         for _, profile_path in accounts["accounts"].items():
             account_data = DataHandler.read_json(profile_path)
-            cls(
+            try:
+                cls(
                 account_data["id"],
                 account_data["name"],
                 account_data["balance"],
                 account_data["folder_path"],
                 account_data["profile_path"],
-                account_data["transactions_folder_path"]
+                account_data["transaction_history_file"]
             )
+            except Exception as e:
+                from modules.parser import Parser
+                if Parser.debug_mode:
+                    print(Parser.traceback_exception(e))
+                else:
+                    print(f"{Text.BG_RED}{Text.WHITE}Something went wrong while loading an account, please make sure that the account directory isn't corrupted.{Text.RESET}")
+                break
+        return None
+
     @classmethod
     def find_account(cls, account_name_or_id: str) -> Account | None:
         for account in Account.accounts:
@@ -154,5 +164,5 @@ class Account():
         return f"{self.name}"
     
     def __repr__(self) -> str:
-        return f"{self.name} ({self.id})\nBALANCE: {self.balance}.\nFolder: {self.folder_path}\nProfile JSON file: {self.profile_path}\nTransaction folder: {self.transactions_folder_path}"
+        return f"{self.name} ({self.id})\nBALANCE: {self.balance}.\nFolder: {self.folder_path}\nProfile JSON file: {self.profile_path}\nTransaction folder: {self.transaction_history_file}"
     

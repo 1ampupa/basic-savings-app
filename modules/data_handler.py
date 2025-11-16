@@ -1,10 +1,13 @@
+from modules.ascii_decorator import AsciiDecorator as Text
 from pathlib import Path
-import json
+import json, csv
 
 class DataHandler:
     data_folder_path: Path = Path("data")
     accounts_json_file: Path = data_folder_path / "accounts.json"
-    
+    transaction_csv_header: list = ["id", "account_name", "account_id", "type", "amount", 
+                                    "account_new_balance", "transferer", "receiver"]
+
     # Helper function to check index exist in list
     @staticmethod
     def exists_in_list(target_list: list, index: int) -> bool:
@@ -15,6 +18,17 @@ class DataHandler:
     def write_json(path: Path, data: dict|list) -> None:
         with open(path, "w") as file:
             json.dump(data, file, indent=4)
+
+    # Helper function for appending CSV file
+    @classmethod
+    def append_csv(cls, path: Path, data: dict) -> None:
+        with open(path, "a", newline="") as file:
+            if not Path(path).exists() or Path(path).stat().st_size == 0:
+                from modules.account import Account
+                if Account.current_account:
+                    cls.create_transaction_history_file(Account.current_account.folder_path)
+            writer = csv.DictWriter(file, fieldnames=cls.transaction_csv_header)
+            writer.writerow(data)
 
     # Helper function for reading JSON file
     @staticmethod
@@ -63,7 +77,7 @@ class DataHandler:
     @classmethod
     def create_account_profile(cls, account_folder: Path, account_id: str, 
                                name: str, balance: float, folder_path: Path,
-                               transaction_folder_path: Path) -> Path:
+                               transaction_history_file: Path) -> Path:
         path = account_folder / "profile.json"
         cls.write_json(path, {
             "id": account_id, 
@@ -71,7 +85,7 @@ class DataHandler:
             "balance": balance,
             "folder_path": str(folder_path),
             "profile_path": str(path),
-            "transactions_folder_path": str(transaction_folder_path)
+            "transaction_history_file": str(transaction_history_file)
             })
         return path
 
@@ -85,28 +99,38 @@ class DataHandler:
             "balance": account.balance,
             "folder_path": str(account.folder_path),
             "profile_path": str(account.profile_path),
-            "transactions_folder_path": str(account.transactions_folder_path)
+            "transaction_history_file": str(account.transaction_history_file)
         })
 
-    # Create a transaction folder inside an account folder
-    @staticmethod
-    def create_transactions_folder(account_folder: Path) -> Path:
-        folder = account_folder / "transactions"
-        folder.mkdir(exist_ok=True)
-        return folder
+    # Create a transaction history file inside an account folder
+    @classmethod
+    def create_transaction_history_file(cls, account_folder: Path) -> Path:
+        path = account_folder / "transaction_history.csv"
+        with open(path, "w", newline="") as file:
+            writer = csv.writer(file)
+            # Write Header
+            writer.writerow(cls.transaction_csv_header)
+        return path
 
     # Write transaction log into the transaction folder inside the account folder.
     @staticmethod
     def write_transaction(account, transaction) -> None:
-        path = Path(account.transactions_folder_path) / f"{transaction.id}.json"
-        data = {
-            "id": transaction.id,
-            "account": account.name,
-            "account_id": account.id,
-            "type": str(transaction.transaction_type),
-            "amount": transaction.amount,
-            "new_balance": account.balance,
-            "transferer": transaction.transferer.name,
-            "receiver": transaction.receiver.name
-        }
-        DataHandler.write_json(path, data)
+        try:
+            path: Path = account.transaction_history_file
+            data = {                                            # Original variables data type
+                "id": str(transaction.id),                      # str
+                "account_name": str(account.name),                   # Account
+                "account_id": str(account.id),                  # str
+                "type": str(transaction.transaction_type),      # enum TRANSACTION_TYPE
+                "amount": str(transaction.amount),              # float
+                "account_new_balance": str(account.balance),            # float
+                "transferer": str(transaction.transferer.name), # str
+                "receiver": str(transaction.receiver.name)      # str
+            }
+            DataHandler.append_csv(path, data)
+        except Exception as e:
+            from modules.parser import Parser
+            if Parser.debug_mode:
+                print(Parser.traceback_exception(e))
+            else:
+                print(f"{Text.RED}Something went wrong while writing a transaction.{Text.RESET}")
