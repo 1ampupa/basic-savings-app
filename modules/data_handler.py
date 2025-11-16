@@ -21,12 +21,9 @@ class DataHandler:
 
     # Helper function for appending CSV file
     @classmethod
-    def append_csv(cls, path: Path, data: dict) -> None:
-        with open(path, "a", newline="") as file:
-            if not Path(path).exists() or Path(path).stat().st_size == 0:
-                from modules.account import Account
-                if Account.current_account:
-                    cls.create_transaction_history_file(Account.current_account.folder_path)
+    def append_csv(cls, folder_path: Path, data: dict) -> None:
+        folder_path = cls.ensure_transaction_history_file(folder_path)
+        with open(folder_path, "a", newline="") as file:
             writer = csv.DictWriter(file, fieldnames=cls.transaction_csv_header)
             writer.writerow(data)
 
@@ -53,6 +50,17 @@ class DataHandler:
             })
         return cls.accounts_json_file
 
+    # Create a transaction history file inside an account folder
+    @classmethod
+    def ensure_transaction_history_file(cls, account_folder: Path) -> Path:
+        path = Path(account_folder) / "transaction_history.csv"
+        if not Path(path).exists() or Path(path).stat().st_size == 0:
+            with open(path, "w", newline="") as file:
+                writer = csv.writer(file)
+                # Write Header
+                writer.writerow(cls.transaction_csv_header)
+        return path
+
     # Update Accounts list file
     @classmethod
     def update_accounts_list(cls, data: dict) -> None:
@@ -68,55 +76,58 @@ class DataHandler:
 
     # Create an account folder
     @classmethod
-    def create_account_folder(cls, account_id: str) -> Path:
+    def ensure_account_folder(cls, account_id: str) -> Path:
         folder = cls.data_folder_path / account_id
         folder.mkdir(exist_ok=True)
         return folder
 
-    # Create an account profile JSON file
+    # Account profile writer
     @classmethod
-    def create_account_profile(cls, account_folder: Path, account_id: str, 
-                               name: str, balance: float, folder_path: Path,
-                               transaction_history_file: Path) -> Path:
-        path = account_folder / "profile.json"
-        cls.write_json(path, {
+    def write_account_profile(cls, account_id: str, name: str, balance: float, 
+                               folder_path: Path, profile_path, 
+                               transaction_history_file: Path, 
+                               ) -> Path:
+        cls.write_json(Path(profile_path), {
             "id": account_id, 
             "name": name, 
             "balance": balance,
             "folder_path": str(folder_path),
-            "profile_path": str(path),
+            "profile_path": str(profile_path),
             "transaction_history_file": str(transaction_history_file)
             })
+        return Path(profile_path)
+
+    # Create an account profile JSON file
+    @classmethod
+    def ensure_account_profile(cls, account_id: str, account_name: str, balance: float, 
+                               folder_path: Path, profile_path: Path,
+                               transaction_history_file: Path, ) -> Path:
+        path: Path = cls.write_account_profile(
+            account_id,
+            account_name,
+            balance,
+            folder_path,
+            profile_path,
+            transaction_history_file
+            )
         return path
 
     # Update an account profile JSON file
-    @staticmethod
-    def update_account_profile(account) -> None:
-        path = account.profile_path
-        DataHandler.write_json(path, {
-            "id": account.id,
-            "name": account.name,
-            "balance": account.balance,
-            "folder_path": str(account.folder_path),
-            "profile_path": str(account.profile_path),
-            "transaction_history_file": str(account.transaction_history_file)
-        })
-
-    # Create a transaction history file inside an account folder
     @classmethod
-    def create_transaction_history_file(cls, account_folder: Path) -> Path:
-        path = account_folder / "transaction_history.csv"
-        with open(path, "w", newline="") as file:
-            writer = csv.writer(file)
-            # Write Header
-            writer.writerow(cls.transaction_csv_header)
-        return path
+    def update_account_profile(cls, account) -> None:
+        DataHandler.write_account_profile(
+            account.id,
+            account.name,
+            account.balance,
+            account.folder_path,
+            account.profile_path,
+            account.transaction_history_file
+        )
 
     # Write transaction log into the transaction folder inside the account folder.
     @staticmethod
     def write_transaction(account, transaction) -> None:
         try:
-            path: Path = account.transaction_history_file
             data = {                                            # Original variables data type
                 "id": str(transaction.id),                      # str
                 "account_name": str(account.name),                   # Account
@@ -127,7 +138,7 @@ class DataHandler:
                 "transferer": str(transaction.transferer.name), # str
                 "receiver": str(transaction.receiver.name)      # str
             }
-            DataHandler.append_csv(path, data)
+            DataHandler.append_csv(account.folder_path, data)
         except Exception as e:
             from modules.parser import Parser
             if Parser.debug_mode:

@@ -52,13 +52,13 @@ class Account():
         balance = balance or 0
 
         # Create an account folder
-        folder_path = DataHandler.create_account_folder(id)
+        folder_path = DataHandler.ensure_account_folder(id)
         
         # Create a transaction history file
-        transaction_history_file = DataHandler.create_transaction_history_file(folder_path)
+        transaction_history_file = DataHandler.ensure_transaction_history_file(folder_path)
         
         # Create a profile.json file
-        profile_path = DataHandler.create_account_profile(folder_path, id, name, balance, folder_path, transaction_history_file)
+        profile_path = DataHandler.ensure_account_profile(id, name, balance, folder_path, Path(folder_path / "profile.json"), transaction_history_file)
 
         return cls(id, name, balance, folder_path, profile_path, transaction_history_file)
     
