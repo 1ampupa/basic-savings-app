@@ -6,7 +6,7 @@ class DataHandler:
     data_folder_path: Path = Path("data")
     accounts_json_file: Path = data_folder_path / "accounts.json"
     transaction_csv_header: list = ["id", "account_name", "account_id", "type", "amount", 
-                                    "account_new_balance", "transferer", "receiver"]
+                                    "account_new_balance", "date", "time", "transferer", "receiver"]
 
     # Helper function to check index exist in list
     @staticmethod
@@ -130,11 +130,13 @@ class DataHandler:
         try:
             data = {                                            # Original variables data type
                 "id": str(transaction.id),                      # str
-                "account_name": str(account.name),                   # Account
+                "account_name": str(account.name),              # Account
                 "account_id": str(account.id),                  # str
                 "type": str(transaction.transaction_type),      # enum TRANSACTION_TYPE
                 "amount": str(transaction.amount),              # float
-                "account_new_balance": str(account.balance),            # float
+                "account_new_balance": str(account.balance),    # float
+                "date": str(transaction.date),                  # str
+                "time": str(transaction.time),                  # str
                 "transferer": str(transaction.transferer.name), # str
                 "receiver": str(transaction.receiver.name)      # str
             }

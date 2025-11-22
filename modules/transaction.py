@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from modules.data_handler import DataHandler
 from modules.transaction_types import TransactionTypes
 from modules.ascii_decorator import AsciiDecorator as Text
@@ -13,11 +14,13 @@ class Transaction():
         self.account : Account = account
         self.transaction_type: TransactionTypes = transaction_type
         self.amount: float = amount
+        now = datetime.now()
+        self.date: str = now.strftime("%d/%m/%Y")
+        self.time: str = now.strftime("%H:%M:%S")
         self.transferer: Account = transferer
         self.receiver: Account = receiver
 
         # Create the transaction information
-        
         DataHandler.write_transaction(self.account, self)
 
     def __str__(self) -> str:
