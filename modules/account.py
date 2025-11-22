@@ -65,21 +65,24 @@ class Account():
     @classmethod
     def load_accounts(cls) -> Account | None:
         cls.accounts.clear()
-        accounts: dict = DataHandler.get_accounts_list()
+        accounts = DataHandler.get_accounts_list()
 
-        if not accounts.get("accounts"): 
-            return None
+        if type(accounts) == dict:
+            if not accounts.get("accounts"): 
+                return None
+        else: return None
 
         for _, profile_path in accounts["accounts"].items():
-            account_data = DataHandler.read_json(profile_path)
+            account_data = DataHandler.read_file(profile_path, "JSON")
             try:
-                cls(
-                account_data["id"],
-                account_data["name"],
-                account_data["balance"],
-                account_data["folder_path"],
-                account_data["profile_path"],
-                account_data["transaction_history_file"]
+                if type(account_data) == dict:
+                    cls(
+                    account_data["id"],
+                    account_data["name"],
+                    account_data["balance"],
+                    account_data["folder_path"],
+                    account_data["profile_path"],
+                    account_data["transaction_history_file"]
             )
             except Exception as e:
                 from modules.parser import Parser

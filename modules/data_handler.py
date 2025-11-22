@@ -13,7 +13,7 @@ class DataHandler:
     def exists_in_list(target_list: list, index: int) -> bool:
         return index < len(target_list)
 
-    # Helper function for writing JSON file
+    # Helper function for writing a JSON file
     @staticmethod
     def write_json(path: Path, data: dict|list) -> None:
         with open(path, "w") as file:
@@ -27,12 +27,21 @@ class DataHandler:
             writer = csv.DictWriter(file, fieldnames=cls.transaction_csv_header)
             writer.writerow(data)
 
-    # Helper function for reading JSON file
-    @staticmethod
-    def read_json(path):
-        with open(path, "r") as file:
-            data = json.load(file)
-            return data
+    # Helper function for reading a JSON file
+    @classmethod
+    def read_file(cls, path, file_type: str):
+        with open(path, "r", newline='', encoding="utf-8") as file:
+            if file_type.upper() == "JSON":
+                json_data: dict = json.load(file)
+                return json_data
+            elif file_type.upper() == "CSV":
+                reader = csv.DictReader(file)
+                csv_data: list = []
+                for row in reader:
+                    for header in cls.transaction_csv_header:
+                        csv_data.append(row[header])
+                return csv_data
+            return {}
 
     # Create Data Folder
     @classmethod
@@ -71,7 +80,7 @@ class DataHandler:
     @classmethod
     def get_accounts_list(cls):
         path: Path = cls.accounts_json_file
-        data = cls.read_json(path)
+        data = cls.read_file(path, "JSON")
         return data
 
     # Create an account folder
