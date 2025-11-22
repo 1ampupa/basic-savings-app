@@ -23,8 +23,6 @@ class Transaction():
         # Create the transaction information
         DataHandler.write_transaction(self.account, self)
 
-        print(DataHandler.read_file(self.account.transaction_history_file, "CSV"))
-
     def __str__(self) -> str:
         match self.transaction_type:
             case TransactionTypes.DEPOSIT:

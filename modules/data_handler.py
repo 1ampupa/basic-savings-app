@@ -38,8 +38,10 @@ class DataHandler:
                 reader = csv.DictReader(file)
                 csv_data: list = []
                 for row in reader:
+                    row_data = {}
                     for header in cls.transaction_csv_header:
-                        csv_data.append(row[header])
+                        row_data[header] = row[header]
+                    csv_data.append(row_data)
                 return csv_data
             return {}
 
