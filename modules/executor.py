@@ -164,13 +164,20 @@ class Executor():
                 
         return False, f"{Text.YELLOW}Something went wrong, please try again later.{Text.RESET}"
     
+    @staticmethod
+    def execute_transaction_query(arguments=[]) -> tuple: return ()
+
+    @staticmethod
+    def execute_transaction_clear(arguments=[]) -> tuple: return ()
+
     # Help Command
+
     @staticmethod
     def command_help():
         from modules.parser import Parser
 
         # Header
-        print(f"{Text.YELLOW}If you're seeing 'Text.YELLOW' message at the start of the message, that means your terminal doesn't support colour.{Text.RESET}")
+        print(f"{Text.YELLOW}If you're seeing a escape sequence message at the start of the message, that means your terminal doesn't support colour.{Text.RESET}")
         print("In order to see ASCII terminal colour, in Windows type this in your CMD with administrator privilege.")
         print("reg add HKCU\\Console /v VirtualTerminalLevel /t REG_DWORD /d 1")
         
@@ -190,31 +197,34 @@ class Executor():
             "SOB": ":("
         }
 
-        account_sub_command_description = {
+        sub_command_description = {
+            "ACC_LIST": "Display every accounts in the system.",
             "ACC_LOGIN": "Log into an account.",
             "ACC_CREATE": "Create an new account",
             "ACC_BALANCE": "Query an existing account balance.",
             "ACC_MODIFY": "Modify an existing account data.",
-            "ACC_DELETE": "Delete an existing account."
+            "ACC_DELETE": "Delete an existing account.",
+
+            "T_DEPOSIT": "Deposit money into an existing account.",
+            "T_WITHDRAW": "Withdraw money from an existing account.",
+            "T_TRANSFER": "Transfer money from A to B account.",
+            "T_QUERY": "Query the latest n amount of transactions.",
+            "T_CLEAR": "Clear the transactions beyond the n amount."
         }
 
-        account_sub_command_syntax = {
+        sub_command_syntax = {
+            "ACC_LIST": "acc *",
             "ACC_LOGIN": "acc log [Account Name]",
             "ACC_CREATE": "acc new [Account Name] [<Starting Balance>]",
             "ACC_BALANCE": "acc balance",
             "ACC_MODIFY": "acc edit [Account Name] [Attribute] [Value]",
-            "ACC_DELETE": "acc del [Account Name]",}
+            "ACC_DELETE": "acc del [Account Name]",
 
-        transaction_sub_command_description = {
-            "T_DEPOSIT": "Deposit money into an existing account.",
-            "T_WITHDRAW": "Withdraw money from an existing account.",
-            "T_TRANSFER": "Transfer money from A to B account."
-        }
-
-        transaction_sub_command_syntax = {
             "T_DEPOSIT": "t + [Amount]",
             "T_WITHDRAW": "t - [Amount]",
-            "T_TRANSFER": "t > [Target Account] [Amount]"
+            "T_TRANSFER": "t > [Target Account] [Amount]",
+            "T_QUERY": "t query [<Amount>|*]",
+            "T_CLEAR": "t clear [<Amount>|*]"
         }
 
         # Prefix
@@ -223,24 +233,14 @@ class Executor():
             description = prefix_descriptions.get(prefix.name, "")
             print(f"{Text.GREEN}{prefix.name:<20}{Text.RESET} {alias_string:<30} {description:<40}")
 
-        # Account Subcommand
-        print(f"{Text.RED}\nAccount Subcommand")
-        print(f"{Text.RED}{'TYPE':<20} {'ALIASES':<30} {'DESCRIPTION':<40} {'SYNTAX':<40} {Text.RESET}")
+        # Subcommand
+        print(f"{Text.RED}\nSubcommand")
+        print(f"{Text.RED}{'TYPE':<20} {'ALIASES':<30} {'DESCRIPTION':<50} {'SYNTAX':<30} {Text.RESET}")
         print(f"{Text.RED}{'-'*140}{Text.RESET}")
-        for sub_command, aliases in Parser.account_sub_command_aliases.items():
+        for sub_command, aliases in Parser.sub_command_aliases.items():
             alias_string = ", ".join(aliases)
-            description = account_sub_command_description.get(sub_command.name, "")
-            syntax = account_sub_command_syntax.get(sub_command.name, "")
-            print(f"{Text.GREEN}{sub_command.name:<20}{Text.RESET} {alias_string:<30} {description:<40} {syntax:<20}")
-
-        # Transaction Subcommand
-        print(f"{Text.RED}\nTransaction Subcommand")
-        print(f"{Text.RED}{'TYPE':<20} {'ALIASES':<30} {'DESCRIPTION':<40} {'SYNTAX':<40} {Text.RESET}")
-        print(f"{Text.RED}{'-'*140}{Text.RESET}")
-        for sub_command, aliases in Parser.transaction_sub_command_aliases.items():
-            alias_string = ", ".join(aliases)
-            description = transaction_sub_command_description.get(sub_command.name, "")
-            syntax = transaction_sub_command_syntax.get(sub_command.name, "")
-            print(f"{Text.GREEN}{sub_command.name:<20}{Text.RESET} {alias_string:<30} {description:<40} {syntax:<20}")
+            description = sub_command_description.get(sub_command.name, "")
+            syntax = sub_command_syntax.get(sub_command.name, "")
+            print(f"{Text.GREEN}{sub_command.name:<20}{Text.RESET} {alias_string:<30} {description:<50} {syntax:<30}")
 
         print(f"{Text.RESET}")

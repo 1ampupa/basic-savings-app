@@ -24,5 +24,7 @@ class Commands(Enum):
     T_DEPOSIT = auto()
     T_WITHDRAW = auto()
     T_TRANSFER = auto()
+    T_QUERY = auto()
+    T_CLEAR = auto()
 
     SOB = auto()

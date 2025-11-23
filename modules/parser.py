@@ -1,11 +1,21 @@
 import os, platform, shlex, traceback
+from types import FunctionType
 from modules.commands import Commands
 from modules.executor import Executor
 from modules.ascii_decorator import AsciiDecorator as Text
 
 class Parser:
+
+    command: str = ""
+    prefix: str | Commands = Commands.NONE
+    sub_command: str = ""
+    arguments : list[str] = []
     
     program_version = "Release Version 1"
+
+    # Debug mode
+    debug_mode = False
+
 
     prefix_aliases = {
         Commands.DEBUG: ["DEBUG", "DEV", "TEST"],
@@ -20,56 +30,41 @@ class Parser:
         Commands.SOB: ["SOB", ":(", "D:", "cry"]
     }
 
-    account_sub_command_aliases = {
+    sub_command_aliases = {
+        # ACCOUNT
         Commands.ACC_LIST: ["list", "query", "all", "*"],
         Commands.ACC_LOGIN: ["login", "log", "session", "use", "in"],
         Commands.ACC_CREATE: ["create", "new", "add", "open"],
         Commands.ACC_BALANCE: ["balance", "b", "money", "get"],
         Commands.ACC_MODIFY: ["edit", "modify", "change"],
         Commands.ACC_DELETE: ["delete", "del", "remove", "close"],
-    }
 
-    transaction_sub_command_aliases = {
+        # TRANSACTION
+
         Commands.T_DEPOSIT: ["deposit", "add", "+"],
         Commands.T_WITHDRAW: ["withdraw", "remove", "-"],
-        Commands.T_TRANSFER: ["transfer", "move", ">"]
+        Commands.T_TRANSFER: ["transfer", "move", ">"],
+        Commands.T_QUERY: ["get", "query"],
+        Commands.T_CLEAR: ["clear", "cls"]
     }
 
-    executor_map = {
+
+    executor_map: dict[Commands, tuple[FunctionType, bool]] = { # Commands: [method, require_arguments]
         # ACCOUNT
-        Commands.ACC_LIST: Executor.execute_account_list,
-        Commands.ACC_LOGIN: Executor.execute_account_login,
-        Commands.ACC_CREATE: Executor.execute_account_create,
-        Commands.ACC_BALANCE: Executor.execute_account_balance,
-        Commands.ACC_MODIFY: Executor.execute_account_modify,
-        Commands.ACC_DELETE: Executor.execute_account_delete,
+        Commands.ACC_LIST: (Executor.execute_account_list, False),
+        Commands.ACC_LOGIN: (Executor.execute_account_login, True),
+        Commands.ACC_CREATE: (Executor.execute_account_create, True),
+        Commands.ACC_BALANCE: (Executor.execute_account_balance, False),
+        Commands.ACC_MODIFY: (Executor.execute_account_modify, True),
+        Commands.ACC_DELETE: (Executor.execute_account_delete, True),
 
         # TRANSACTION
-        Commands.T_DEPOSIT: Executor.execute_transaction_deposit,
-        Commands.T_WITHDRAW: Executor.execute_transaction_withdraw,
-        Commands.T_TRANSFER: Executor.execute_transaction_transfer
+        Commands.T_DEPOSIT: (Executor.execute_transaction_deposit, True),
+        Commands.T_WITHDRAW: (Executor.execute_transaction_withdraw, True),
+        Commands.T_TRANSFER: (Executor.execute_transaction_transfer, True),
+        Commands.T_QUERY: (Executor.execute_transaction_query, True),
+        Commands.T_CLEAR: (Executor.execute_transaction_clear, True)
     }
-
-    executor_function_required_arguments = {
-        # ACCOUNT
-        Commands.ACC_LOGIN: Executor.execute_account_login,
-        Commands.ACC_CREATE: Executor.execute_account_create,
-        Commands.ACC_MODIFY: Executor.execute_account_modify,
-        Commands.ACC_DELETE: Executor.execute_account_delete,
-
-        # TRANSACTION
-        Commands.T_DEPOSIT: Executor.execute_transaction_deposit,
-        Commands.T_WITHDRAW: Executor.execute_transaction_withdraw,
-        Commands.T_TRANSFER: Executor.execute_transaction_transfer
-    }
-
-    command: str = ""
-    prefix: str | Commands = Commands.NONE
-    sub_command: str = ""
-    arguments : list[str] = []
-    
-    # Debug mode
-    debug_mode = False
 
     # Aliases checker
 
@@ -85,13 +80,9 @@ class Parser:
     def check_sub_command_aliases(cls) -> tuple:
         sub_command = cls.sub_command.lower()
         # Account
-        for key, alias in cls.account_sub_command_aliases.items():
+        for key, alias in cls.sub_command_aliases.items():
             if sub_command in alias:
-                return key, "Account Subcommand."
-        # Transaction
-        for key, alias in cls.transaction_sub_command_aliases.items():
-            if sub_command in alias:
-                return key, "Transaction Subcommand."
+                return key, "Valid Subcommand."
         return Commands.NONE, f"{Text.YELLOW}Unknown Subcommand. Try using 'HELP' command.{Text.RESET}"
 
     # Check Prefix
@@ -148,10 +139,13 @@ class Parser:
     def execute(cls, sub_command: Commands) -> tuple:
         try:
             execute_function = cls.executor_map.get(sub_command)
-            if execute_function:   
-                arguments = cls.arguments[2:] if sub_command in cls.executor_function_required_arguments else []
-                success, log = execute_function(arguments) if arguments else execute_function()
-                return success, log
+            if not execute_function: return False, "Unknown subcommand. Try using 'HELP' command."
+            command, require_arguments = execute_function
+            arguments = cls.arguments[2:] if require_arguments else []
+            if require_arguments:
+                return command(arguments)
+            else:
+                return command()
         except Exception as e:
             if cls.debug_mode:
                 return False, cls.traceback_exception(e)
